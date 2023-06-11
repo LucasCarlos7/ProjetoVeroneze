@@ -1,22 +1,22 @@
 package venda;
 
+import produto.ProdutoAcabado;
+
 public class ItemVenda {
-    
+
     private int id;
-    private String nomeProduto;
+    private ProdutoAcabado produtoAcabado;
     private double quantidade;
-    private double valorUnitario;
     private double valorTotal;
-    
+    private Venda venda;
 
     public ItemVenda() {
     }
 
-    public ItemVenda(int id, String nomeProduto, double quantidade, double valorUnitario, double valorTotal) {
-        this.id = id;
-        this.nomeProduto = nomeProduto;
+    public ItemVenda(Venda venda, ProdutoAcabado produtoAcabado, double quantidade, double valorTotal) {
+        this.venda = venda;
+        this.produtoAcabado = produtoAcabado;
         this.quantidade = quantidade;
-        this.valorUnitario = valorUnitario;
         this.valorTotal = valorTotal;
     }
 
@@ -28,12 +28,12 @@ public class ItemVenda {
         this.id = id;
     }
 
-    public String getNomeProduto() {
-        return nomeProduto;
+    public ProdutoAcabado getProdutoAcabado() {
+        return produtoAcabado;
     }
 
-    public void setNomeProduto(String nomeProduto) {
-        this.nomeProduto = nomeProduto;
+    public void setProdutoAcabado(ProdutoAcabado produtoAcabado) {
+        this.produtoAcabado = produtoAcabado;
     }
 
     public double getQuantidade() {
@@ -44,14 +44,6 @@ public class ItemVenda {
         this.quantidade = quantidade;
     }
 
-    public double getValorUnitario() {
-        return valorUnitario;
-    }
-
-    public void setValorUnitario(double valorUnitario) {
-        this.valorUnitario = valorUnitario;
-    }
-
     public double getValorTotal() {
         return valorTotal;
     }
@@ -60,11 +52,17 @@ public class ItemVenda {
         this.valorTotal = valorTotal;
     }
 
+    public Venda getVenda() {
+        return venda;
+    }
+
+    public void setVenda(Venda venda) {
+        this.venda = venda;
+    }
+
     @Override
     public String toString() {
-        return "ItemVenda{" + "id=" + id + ", nomeProduto=" + nomeProduto + ", quantidade=" + quantidade + ", valorUnitario=" + valorUnitario + ", valorTotal=" + valorTotal + '}';
+        return "ItemVenda{ produtoAcabado=" + produtoAcabado + ", quantidade=" + quantidade + ", valorTotal=" + valorTotal + ", venda=" + venda + '}';
     }
-    
-    
-    
+
 }

@@ -1,68 +1,49 @@
 package venda;
 
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
+import entidade.Cliente;
+import java.sql.Date;
 
 public class Venda {
-    
-    private static int proximoId = 1;
+
     private int id;
-    private int idCliente;
-    private String nomeCliente;
-    private LocalDate data;
+    private Cliente cliente;
+    private Date data;
     private String statusVenda;
     private double valorTotalFinal;
-    private static final List<Venda> vendaList = new ArrayList<>();
-    private static List<ItemVenda> itemVenda;
 
     public Venda() {
     }
 
-    public Venda(int id, int idCliente, String nomeCliente, LocalDate data) {
-        this.id = proximoId++;
-        this.idCliente = idCliente;
-        this.nomeCliente = nomeCliente;
+    public Venda(int id, Cliente cliente, Date data) {
+        this.id = id;
+        this.cliente = cliente;
         this.data = data;
-        itemVenda = new ArrayList<>();
-        statusVenda = "ABERTA";
-        valorTotalFinal = 0.0;
+        this.statusVenda = "ABERTA";
+        this.valorTotalFinal = 0.0;
     }
 
     public int getId() {
         return id;
     }
 
-    public int getIdCliente() {
-        return idCliente;
+    public void setId(int id) {
+        this.id = id;
     }
 
-    public void setIdCliente(int idCliente) {
-        this.idCliente = idCliente;
+    public Cliente getCliente() {
+        return cliente;
+    }
+    
+    public void setCliente(Cliente cliente) {
+        this.cliente = cliente;
     }
 
-    public String getNomeCliente() {
-        return nomeCliente;
-    }
-
-    public void setNomeCliente(String nomeCliente) {
-        this.nomeCliente = nomeCliente;
-    }
-
-    public LocalDate getData() {
+    public Date getData() {
         return data;
     }
 
-    public void setData(LocalDate data) {
+    public void setData(Date data) {
         this.data = data;
-    }
-
-    public static int getProximoId() {
-        return proximoId;
-    }
-
-    public static void setProximoId(int proximoId) {
-        Venda.proximoId = proximoId;
     }
 
     public String getStatusVenda() {
@@ -81,28 +62,10 @@ public class Venda {
         this.valorTotalFinal = valorTotalFinal;
     }
 
-    public static List<Venda> getVendaList() {
-        return vendaList;
-    }
-
-    public static List<ItemVenda> getItemVenda() {
-        return itemVenda;
-    }
-    public void adicionarItem(ItemVenda item){
-        itemVenda.add(item);
-    }    
-    
-    
-    public int proximoId() {
-
-        int ultimoId = proximoId;
-
-        return ultimoId;
-    }
-
     @Override
     public String toString() {
-        return "Venda{" + "id=" + id + ", idCliente=" + idCliente + ", nomeCliente=" + nomeCliente + ", data=" + data + ", statusVenda=" + statusVenda + ", valorTotalFinal=" + valorTotalFinal + '}';
+        return "Venda{" + "id=" + id + ", cliente=" + cliente + ", data=" + data + ", statusVenda=" + statusVenda + ", valorTotalFinal=" + valorTotalFinal + '}';
     }
+    
     
 }

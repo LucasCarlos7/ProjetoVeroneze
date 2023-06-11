@@ -4,12 +4,18 @@
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
             <file>file:/E:/PI%20-%20Senac/Projeto%20Veroneze/ProjetoVeroneze/src/produto/ProdutoCongeladoDao.java</file>
-            <file>file:/E:/PI%20-%20Senac/Projeto%20Veroneze/ProjetoVeroneze/src/entidade/ClienteDao.java</file>
-            <file>file:/E:/PI%20-%20Senac/Projeto%20Veroneze/ProjetoVeroneze/src/estoque/MovimentacaoEstoqueDao.java</file>
             <file>file:/E:/PI%20-%20Senac/Projeto%20Veroneze/ProjetoVeroneze/src/telas/RelatorioProdutoAcabado.java</file>
             <file>file:/E:/PI%20-%20Senac/Projeto%20Veroneze/ProjetoVeroneze/src/produto/ProdutoCongelado.java</file>
             <file>file:/E:/PI%20-%20Senac/Projeto%20Veroneze/ProjetoVeroneze/src/telas/TransferenciaEstoque.java</file>
+            <file>file:/E:/PI%20-%20Senac/Projeto%20Veroneze/ProjetoVeroneze/src/venda/ItemVenda.java</file>
+            <file>file:/E:/PI%20-%20Senac/Projeto%20Veroneze/ProjetoVeroneze/src/venda/VendaDao.java</file>
+            <file>file:/E:/PI%20-%20Senac/Projeto%20Veroneze/ProjetoVeroneze/src/venda/Venda.java</file>
             <file>file:/E:/PI%20-%20Senac/Projeto%20Veroneze/ProjetoVeroneze/src/produto/ProdutoAcabadoDao.java</file>
+            <file>file:/E:/PI%20-%20Senac/Projeto%20Veroneze/ProjetoVeroneze/src/produto/ProdutoAcabado.java</file>
+            <file>file:/E:/PI%20-%20Senac/Projeto%20Veroneze/ProjetoVeroneze/src/entidade/ClienteDao.java</file>
+            <file>file:/E:/PI%20-%20Senac/Projeto%20Veroneze/ProjetoVeroneze/src/estoque/MovimentacaoEstoqueDao.java</file>
+            <file>file:/E:/PI%20-%20Senac/Projeto%20Veroneze/ProjetoVeroneze/src/telas/telaVenda.java</file>
+            <file>file:/E:/PI%20-%20Senac/Projeto%20Veroneze/ProjetoVeroneze/src/venda/ItemVendaDao.java</file>
         </group>
     </open-files>
 </project-private>

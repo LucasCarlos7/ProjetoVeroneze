@@ -1,14 +1,24 @@
 package telas;
 
 import entidade.Cliente;
+import entidade.ClienteDao;
+import estoque.MovimentacaoEstoqueDao;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Date;
+import java.util.List;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableRowSorter;
 import produto.ProdutoAcabado;
+import produto.ProdutoAcabadoDao;
 import produto.ProdutoCongelado;
 import venda.Venda;
 import venda.ItemVenda;
+import venda.ItemVendaDao;
+import venda.VendaDao;
 
 /**
  *
@@ -18,14 +28,61 @@ public class telaVenda extends javax.swing.JFrame {
 
     public static Venda venda = new Venda();
 
+    MovimentacaoEstoqueDao movimentacaoEstoqueDao = new MovimentacaoEstoqueDao();
     ProdutoCongelado produtoCongelado = new ProdutoCongelado();
-    public static ProdutoAcabado produtoAcabado = new ProdutoAcabado();
+    ProdutoAcabado produtoAcabado = new ProdutoAcabado();
+    VendaDao vendaDao = new VendaDao();
+    ItemVendaDao itemVendaDao = new ItemVendaDao();
+    ProdutoAcabadoDao acabadoDao = new ProdutoAcabadoDao();
+    ClienteDao clienteDao = new ClienteDao();
     Cliente cliente = new Cliente();
     LocalDate data = LocalDate.now();
     DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
-    private final String[] tableColumns = {"ID", "Produto", "Valor Unitário", "Quantidade", "Valor Total"};
-    DefaultTableModel tableModel = new DefaultTableModel(tableColumns, 0);
+    private void preencherTabela() {
+        ItemVenda itemVenda = new ItemVenda();
+        boolean status = itemVendaDao.conectar();
+        if (status == false) {
+
+        } else {
+
+            int idVenda = Integer.parseInt(txtId.getText());
+
+//            if(idVenda == null){
+//                
+//            }
+            List<ItemVenda> listItemVenda = itemVendaDao.getItemVenda(idVenda);
+            DefaultTableModel tabelaItemVenda = (DefaultTableModel) tblItemVenda.getModel();
+            tblItemVenda.setRowSorter(new TableRowSorter(tabelaItemVenda));
+
+            if (!listItemVenda.isEmpty()) {
+
+                for (ItemVenda c : listItemVenda) {
+                    Object[] obj = new Object[]{
+                        c.getProdutoAcabado().getId(), c.getProdutoAcabado().getNome(),
+                        c.getQuantidade(), c.getProdutoAcabado().getPreco(), c.getValorTotal()
+                    };
+                    boolean isDuplicate = false;
+                    for (int i = 0; i < tabelaItemVenda.getRowCount(); i++) {
+                        String nome = tabelaItemVenda.getValueAt(i, 1).toString();
+                        String strQuantidade = tabelaItemVenda.getValueAt(i, 2).toString();
+                        double quantidade = Double.parseDouble(strQuantidade);
+                        if (nome.equals(c.getProdutoAcabado().getNome()) && quantidade == c.getQuantidade()) {
+                            isDuplicate = true;
+                            break;
+                        }
+                    }
+
+                    if (!isDuplicate) {
+                        tabelaItemVenda.addRow(obj);
+                    }
+                    itemVendaDao.desconectar();
+                }
+            } else {
+
+            }
+        }
+    }
 
     /**
      * Creates new form TransferenciaEstoque
@@ -46,7 +103,6 @@ public class telaVenda extends javax.swing.JFrame {
         txtData.setEditable(false);
         txtIdProduto.setEnabled(false);
         txtQuantidade.setEnabled(false);
-
     }
 
     /**
@@ -510,159 +566,214 @@ public class telaVenda extends javax.swing.JFrame {
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void jbIncluirActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbIncluirActionPerformed
+        boolean status = vendaDao.conectar();
 
-        String strID = Integer.toString(venda.proximoId());
-        txtId.setText(strID);
-        txtId.setEditable(false);
-        String strData = data.format(fmt);
-        txtData.setText(strData);
-        txtIdProduto.setText("");
-        txtNomeProduto.setText("");
-        txtQuantidade.setText("");
-        txtIdCliente.setText("");
-        txtNomeCliente.setText("");
-        txtValorUnitario.setText("");
-        txtValorTotal.setText("");
-        txtValorTotalFinal.setText("");
-        jbIncluir.nextFocus();
-
+        if (status == true) {
+            String strID = Integer.toString(vendaDao.ProximoId() + 1);
+            txtId.setText(strID);
+            txtId.setEditable(false);
+            String strData = data.format(fmt);
+            txtData.setText(strData);
+            txtIdProduto.setText("");
+            txtNomeProduto.setText("");
+            txtQuantidade.setText("");
+            txtIdCliente.setText("");
+            txtNomeCliente.setText("");
+            txtValorUnitario.setText("");
+            txtValorTotal.setText("");
+            txtValorTotalFinal.setText("");
+            jbIncluir.nextFocus();
+            vendaDao.desconectar();
+        }
     }//GEN-LAST:event_jbIncluirActionPerformed
 
     private void jbSalvarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbSalvarActionPerformed
         int id = 0;
         LocalDate data = this.data;
         int idCliente = 0;
-        String nomeCliente = "";
+        String strData = null;
+
+        boolean status = vendaDao.conectar();
+        int resposta;
+        java.sql.Date sqlDate = null;
         try {
             id = Integer.parseInt(txtId.getText());
             idCliente = Integer.parseInt(txtIdCliente.getText());
-            nomeCliente = txtNomeCliente.getText();
+            strData = txtData.getText();
         } catch (NumberFormatException e) {
 
         }
-        for (Venda venda : venda.getVendaList()) {
-            if (id == venda.getId()) {
-                JOptionPane.showMessageDialog(rootPane, "Venda já cadastrada nesse ID: " + id);
-                return;
+        if (status == false) {
+            JOptionPane.showMessageDialog(null, "Erro de conexão");
+        } else {
+            SimpleDateFormat conversor = new SimpleDateFormat("dd/MM/yyyy");
+            try {
+                Date dataConvertida = conversor.parse(strData);
+                sqlDate = new java.sql.Date(dataConvertida.getTime());
+            } catch (ParseException e) {
+                System.out.println("Erro na conversão da data");
             }
+            Cliente cliente = new Cliente();
+            cliente.setId(idCliente);
+
+            Venda venda = new Venda(id, cliente, sqlDate);
+            resposta = vendaDao.salvar(venda);
+
+            if (resposta == 1) {
+
+            } else if (resposta == 1062) {
+                JOptionPane.showMessageDialog(null, "Dados já cadastrado");
+            }
+            btnAdicionar.setEnabled(true);
+            btnRemover.setEnabled(true);
+            btnFecharVenda.setEnabled(true);
+            jbSalvar.setEnabled(false);
+
+            txtNomeCliente.setEnabled(false);
+            txtNomeProduto.setEnabled(true);
+            txtValorTotal.setEnabled(true);
+            txtValorUnitario.setEnabled(true);
+            txtValorTotalFinal.setEnabled(true);
+            txtData.setEnabled(false);
+            txtIdProduto.setEnabled(true);
+            txtQuantidade.setEnabled(true);
+            txtId.setEnabled(false);
+            txtIdCliente.setEnabled(false);
+            jbSalvar.nextFocus();
+            vendaDao.desconectar();
+
         }
-        Venda vendaList = new Venda(id, idCliente, nomeCliente, data);
-        venda.getVendaList().add(vendaList);
-        btnAdicionar.setEnabled(true);
-        btnRemover.setEnabled(true);
-        btnFecharVenda.setEnabled(true);
-        jbSalvar.setEnabled(false);
-
-        txtNomeCliente.setEnabled(false);
-        txtNomeProduto.setEnabled(true);
-        txtValorTotal.setEnabled(true);
-        txtValorUnitario.setEnabled(true);
-        txtValorTotalFinal.setEnabled(true);
-        txtData.setEnabled(false);
-        txtIdProduto.setEnabled(true);
-        txtQuantidade.setEnabled(true);
-        txtId.setEnabled(false);
-        txtIdCliente.setEnabled(false);
-        jbSalvar.nextFocus();
-
     }//GEN-LAST:event_jbSalvarActionPerformed
 
     private void jbBuscarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbBuscarActionPerformed
         int id = 0;
-        ItemVenda itemVenda;
         double soma = 0.0;
+        boolean status = itemVendaDao.conectar();
         try {
             id = Integer.parseInt(txtId.getText());
         } catch (NumberFormatException e) {
             return;
         }
-        for (Venda vendaRealizada : venda.getVendaList()) {
-            if (id == vendaRealizada.getId()) {
-                txtData.setText(vendaRealizada.getData().format(fmt));
-                txtIdCliente.setText(Integer.toString(vendaRealizada.getIdCliente()));
-                txtNomeCliente.setText(vendaRealizada.getNomeCliente());
+        if (status == true) {
+            ItemVenda itemVenda = itemVendaDao.consultar(id);
+
+            if (itemVenda == null) {
+                JOptionPane.showMessageDialog(null, "Não foi encontrado uma venda com ID " + id + "");
+            } else {
+                txtData.setText(this.reverterData(String.valueOf(itemVenda.getVenda().getData())));
+                txtIdCliente.setText(Integer.toString(itemVenda.getVenda().getCliente().getId()));
+                txtNomeCliente.setText(itemVenda.getVenda().getCliente().getNomeCliente());
                 jbSalvar.setEnabled(false);
                 jbExcluir.setEnabled(true);
-                for (int i = 0; i < vendaRealizada.getItemVenda().size(); i++) {
 
-                    if (vendaRealizada.getStatusVenda().equals("ABERTA")) {
-                        itemVenda = vendaRealizada.getItemVenda().get(i);
-                        txtIdProduto.setText(Integer.toString(itemVenda.getId()));
-                        txtNomeProduto.setText(itemVenda.getNomeProduto());
-                        txtValorUnitario.setText(Double.toString(itemVenda.getValorUnitario()));
-                        txtQuantidade.setText(Double.toString(itemVenda.getQuantidade()));
-                        txtValorTotal.setText(Double.toString(itemVenda.getValorTotal()));
-                        soma += vendaRealizada.getValorTotalFinal();
-                        txtIdProduto.setEnabled(true);
-                        txtNomeProduto.setEnabled(true);
-                        txtValorUnitario.setEnabled(true);
-                        txtQuantidade.setEnabled(true);
-                        txtValorTotal.setEnabled(true);
-                        txtValorTotal.setEnabled(true);
-                        btnAdicionar.setEnabled(true);
-                        btnRemover.setEnabled(true);
-                        btnFecharVenda.setEnabled(true);
-                        atualizarTabela();
+                if (itemVenda.getVenda().getStatusVenda().equals("ABERTA")) {
+                    txtIdProduto.setText(Integer.toString(itemVenda.getProdutoAcabado().getId()));
+                    txtNomeProduto.setText(itemVenda.getProdutoAcabado().getNome());
+                    txtValorUnitario.setText(Double.toString(itemVenda.getProdutoAcabado().getPreco()));
+                    txtQuantidade.setText(Double.toString(itemVenda.getQuantidade()));
+                    txtValorTotal.setText(Double.toString(itemVenda.getValorTotal()));
+                    txtIdProduto.setEnabled(true);
+                    txtNomeProduto.setEnabled(true);
+                    txtValorUnitario.setEnabled(true);
+                    txtQuantidade.setEnabled(true);
+                    txtIdCliente.setEditable(false);
+                    txtValorTotal.setEnabled(true);
+                    txtValorTotal.setEnabled(true);
+                    btnAdicionar.setEnabled(true);
+                    btnRemover.setEnabled(true);
+                    btnFecharVenda.setEnabled(true);
+                    preencherTabela();
+                    txtValorTotalFinal.setText(Double.toString(itemVenda.getVenda().getValorTotalFinal()));
+                    txtIdProduto.setText("");
+                    txtNomeProduto.setText("");
+                    txtQuantidade.setText("");
+                    txtValorTotal.setText("");
+                    txtValorUnitario.setText("");
 
-                    } else if (vendaRealizada.getStatusVenda().equals("FECHADA")) {
-                        itemVenda = vendaRealizada.getItemVenda().get(i);
-                        txtIdProduto.setText(Integer.toString(itemVenda.getId()));
-                        txtNomeProduto.setText(itemVenda.getNomeProduto());
-                        txtValorUnitario.setText(Double.toString(itemVenda.getValorUnitario()));
-                        txtQuantidade.setText(Double.toString(itemVenda.getQuantidade()));
-                        txtValorTotal.setText(Double.toString(itemVenda.getValorTotal()));
-                        soma += vendaRealizada.getValorTotalFinal();
-                        txtNomeProduto.setEnabled(false);
-                        txtValorUnitario.setEnabled(false);
-                        txtQuantidade.setEnabled(false);
-                        txtValorTotal.setEnabled(false);
-                        txtValorTotal.setEnabled(false);
-                        btnAdicionar.setEnabled(false);
-                        btnRemover.setEnabled(false);
-                        btnFecharVenda.setEnabled(false);
-                        atualizarTabela();
+                } else if (itemVenda.getVenda().getStatusVenda().equals("FECHADA")) {
+                    txtIdProduto.setText(Integer.toString(itemVenda.getId()));
+                    txtNomeProduto.setText(itemVenda.getProdutoAcabado().getNome());
+                    txtValorUnitario.setText(Double.toString(itemVenda.getProdutoAcabado().getPreco()));
+                    txtQuantidade.setText(Double.toString(itemVenda.getQuantidade()));
+                    txtValorTotal.setText(Double.toString(itemVenda.getValorTotal()));
+                    txtNomeProduto.setEnabled(false);
+                    txtValorUnitario.setEnabled(false);
+                    txtQuantidade.setEnabled(false);
+                    txtValorTotal.setEnabled(false);
+                    txtValorTotal.setEnabled(false);
+                    btnAdicionar.setEnabled(false);
+                    btnRemover.setEnabled(false);
+                    btnFecharVenda.setEnabled(false);
+                    txtIdCliente.setEditable(false);
+                    preencherTabela();
+                    txtValorTotalFinal.setText(Double.toString(itemVenda.getVenda().getValorTotalFinal()));
+                    txtIdProduto.setText("");
+                    txtNomeProduto.setText("");
+                    txtQuantidade.setText("");
+                    txtValorTotal.setText("");
+                    txtValorUnitario.setText("");
+
+                }
+
+            }
+        }
+    }//GEN-LAST:event_jbBuscarActionPerformed
+
+    private void jbExcluirActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbExcluirActionPerformed
+        Object[] options = {"OK", "CANCELAR"};
+        int id = 0;
+        boolean status = vendaDao.conectar();
+        DefaultTableModel tabelaItemVenda = (DefaultTableModel) tblItemVenda.getModel();
+        try {
+            id = Integer.parseInt(txtId.getText());
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(rootPane, "Formato Inválido");
+        }
+        if (status == false) {
+            JOptionPane.showMessageDialog(null, "Erro de conexão");
+        } else {
+            Venda venda = vendaDao.consultar(id);
+
+            if (venda == null) {
+                JOptionPane.showMessageDialog(rootPane, "Venda com ID: " + id + " não encontrado");
+            } else {
+                int confirmação = JOptionPane.showOptionDialog(null, "Deseja excluir a Movimentação: \nID:" + venda.getId() + "\nNome do Cliente: " + venda.getCliente().getNomeCliente(),
+                        "Aviso", JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE, null, options, options[0]);
+
+                if (confirmação == 0) {
+                    status = vendaDao.excluir(id);
+                    JOptionPane.showMessageDialog(rootPane, "Venda: " + id + "\nNome do Cliente: " + venda.getCliente().getNomeCliente() + "\n\nRemovido com sucesso!");
+                    limparTela();
+
+                    for (int i = 0; i < tabelaItemVenda.getRowCount(); i++) {
+                        tabelaItemVenda.removeRow(i);
                     }
+
+                    vendaDao.desconectar();
+                    return;
+                } else if (confirmação == 1) {
+                    JOptionPane.showMessageDialog(rootPane, "Exclusão cancelada");
+                    vendaDao.desconectar();
+                    return;
+                } else {
 
                 }
             }
         }
-        txtValorTotalFinal.setText(Double.toString(soma));
-
-    }//GEN-LAST:event_jbBuscarActionPerformed
-
-    private void jbExcluirActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbExcluirActionPerformed
-//        Object[] options = {"OK", "CANCELAR"};
-//        int id = 0;
-//        try {
-//            id = Integer.parseInt(txtId.getText());
-//        } catch (NumberFormatException e) {
-//            JOptionPane.showMessageDialog(rootPane, "Formato Inválido");
-//        }
-//            if (estoque.getId() == id) {
-//                int confirmação = JOptionPane.showOptionDialog(null, "Deseja excluir a Movimentação: \nID:" + estoque.getId() + "\nNome do Produto: " + estoque.getNomeProdutoCongelado() + "\nOperação: " + estoque.getOperacaoNome() + "\nQuantidade: " + estoque.getQuantidade(),
-//                         "Aviso", JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE, null, options, options[0]);
-//                
-//            }else{
-//                JOptionPane.showMessageDialog(rootPane, "Movimentação com ID: " + id + " não encontrado");
-//            }
-//        
     }//GEN-LAST:event_jbExcluirActionPerformed
 
     private void btnAdicionarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAdicionarActionPerformed
         int id = 0;
         int idProduto = 0;
-        String nomeProduto = "";
         double quantidade = 0.0;
-        double valorUnitario = 0.0;
         double valorTotal = 0.0;
-        double soma = 0.0;
+        boolean statusItemVenda = itemVendaDao.conectar();
+        boolean statusVenda = vendaDao.conectar();
 
         try {
             id = Integer.parseInt(txtId.getText());
             idProduto = Integer.parseInt(txtIdProduto.getText());
-            nomeProduto = txtNomeProduto.getText().toUpperCase();
             quantidade = Double.parseDouble(txtQuantidade.getText());
-            valorUnitario = Double.parseDouble(txtValorUnitario.getText());
             valorTotal = Double.parseDouble(txtValorTotal.getText());
         } catch (NumberFormatException e) {
 
@@ -670,26 +781,42 @@ public class telaVenda extends javax.swing.JFrame {
         if (txtNomeProduto.getText().isEmpty()) {
             return;
         }
-        ItemVenda itemVenda = new ItemVenda(idProduto, nomeProduto, quantidade, valorUnitario, valorTotal);
-        venda.adicionarItem(itemVenda);
-        atualizarTabela();
+        if (statusItemVenda == false) {
+            JOptionPane.showMessageDialog(null, "Erro de conexão");
+        } else {
+            ProdutoAcabado acabado = new ProdutoAcabado();
+            acabado.setId(idProduto);
+            Venda venda = new Venda();
+            venda.setId(id);
+            ItemVenda itemVenda = new ItemVenda(venda, acabado, quantidade, valorTotal);
 
-        ItemVenda venda1;
-        for (Venda vendaRealiada : venda.getVendaList()) {
-            if (id == vendaRealiada.getId()) {
-                for (int i = 0; i < venda.getItemVenda().size(); i++) {
+            boolean isDuplicate = false;
+            for (int i = 0; i < tblItemVenda.getRowCount(); i++) {
+                String strId = tblItemVenda.getValueAt(i, 0).toString();
+                int idTabela = Integer.parseInt(strId);
+                String strQuantidade = tblItemVenda.getValueAt(i, 2).toString();
+                double quantidadeTabela = Double.parseDouble(strQuantidade);
 
-                    venda1 = venda.getItemVenda().get(i);
-
-                    soma += venda1.getValorTotal();
-
-                    vendaRealiada.setValorTotalFinal(soma);
-
-                    txtValorTotalFinal.setText(Double.toString(vendaRealiada.getValorTotalFinal()));
+                if (idTabela == itemVenda.getProdutoAcabado().getId() && quantidadeTabela == quantidade) {
+                    isDuplicate = true;
+                    break;
                 }
             }
-        }
+            if (isDuplicate == false) {
+                itemVendaDao.salvar(itemVenda);
+                preencherTabela();
+                if (statusVenda == true) {
+                    double valorFinal = vendaDao.consultarValorFinal(id).getValorTotalFinal();
+                    txtValorTotalFinal.setText(Double.toString(valorFinal));
 
+                    venda.setValorTotalFinal(Double.parseDouble(txtValorTotalFinal.getText()));
+                    venda.setId(Integer.parseInt(txtId.getText()));
+                    vendaDao.atualizar(venda);
+                    vendaDao.desconectar();
+                }
+            }
+
+        }
         txtIdProduto.setText("");
         txtNomeProduto.setText("");
         txtValorUnitario.setText("");
@@ -698,13 +825,46 @@ public class telaVenda extends javax.swing.JFrame {
     }//GEN-LAST:event_btnAdicionarActionPerformed
 
     private void btnRemoverActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRemoverActionPerformed
-        excluirItem(getPosicaoItem());
+        int id = 0;
+        boolean statusItemVenda = itemVendaDao.conectar();
+        boolean statusVenda = vendaDao.conectar();
+        int posicao = -1;
+        ItemVenda item = new ItemVenda();
+        DefaultTableModel tabelaItemVenda = (DefaultTableModel) tblItemVenda.getModel();
+
+        try {
+            posicao = tblItemVenda.getSelectedRow();
+            id = Integer.parseInt(txtId.getText());
+        } catch (NullPointerException e) {
+
+        }
+        if (statusItemVenda == false) {
+            JOptionPane.showMessageDialog(null, "Erro de conexão");
+        } else {
+            String nome = tblItemVenda.getValueAt(posicao, 1).toString();
+            String strQuantidade = tblItemVenda.getValueAt(posicao, 2).toString();
+            double quantidade = Double.parseDouble(strQuantidade);
+            item = itemVendaDao.consultarItemLista(nome, quantidade, id);
+            int idTabela = item.getId();
+            itemVendaDao.excluir(idTabela);
+            tabelaItemVenda.removeRow(tblItemVenda.getSelectedRow());
+
+            if (statusVenda == true) {
+                double valorFinal = vendaDao.consultarValorFinal(id).getValorTotalFinal();
+                txtValorTotalFinal.setText(Double.toString(valorFinal));
+                Venda venda = new Venda();
+                venda.setValorTotalFinal(Double.parseDouble(txtValorTotalFinal.getText()));
+                venda.setId(Integer.parseInt(txtId.getText()));
+                vendaDao.atualizar(venda);
+                vendaDao.desconectar();
+            }
+        }
+
     }//GEN-LAST:event_btnRemoverActionPerformed
 
     private void btnFecharVendaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnFecharVendaActionPerformed
-        ItemVenda itemVenda;
         int id = 0;
-        int quantItem = venda.getItemVenda().size() - 1;
+        boolean status = vendaDao.conectar();
 
         try {
             id = Integer.parseInt(txtId.getText());
@@ -712,73 +872,67 @@ public class telaVenda extends javax.swing.JFrame {
             return;
         }
 
-        for (Venda vendaRealizada : venda.getVendaList()) {
-            if (id == vendaRealizada.getId()) {
-                for (int i = 0; i < venda.getItemVenda().size(); i++) {
+        if (status == true) {
 
-                    for (ProdutoAcabado produto : produtoAcabado.getProdutoAcabadoList()) {
-                        itemVenda = venda.getItemVenda().get(i);
+            Venda venda = new Venda();
+            venda.setId(id);
+            venda.setStatusVenda("FECHADA");
+            vendaDao.atualizarStatusVenda(venda);
+            JOptionPane.showMessageDialog(rootPane, "Venda realizada com sucesso!!!");
+            btnFecharVenda.setEnabled(false);
+            txtIdProduto.setEnabled(false);
+            txtNomeProduto.setEnabled(false);
+            txtValorUnitario.setEnabled(false);
+            txtQuantidade.setEnabled(false);
+            txtValorTotal.setEnabled(false);
+            txtValorTotal.setEnabled(false);
+            btnAdicionar.setEnabled(false);
+            btnRemover.setEnabled(false);
+            double valorFinal = vendaDao.consultarValorFinal(id).getValorTotalFinal();
+            txtValorTotalFinal.setText(Double.toString(valorFinal));;
+            txtValorTotalFinal.setEnabled(false);
 
-                        String nomeItem = itemVenda.getNomeProduto();
-
-                        if (produto.getNome().equals(nomeItem)) {
-                            double soma = produto.getQuantidadeEmEstoque() - itemVenda.getQuantidade();
-                            produto.setQuantidadeEmEstoque(soma);
-                            if (quantItem == i) {
-                                JOptionPane.showMessageDialog(rootPane, "Venda realizada com sucesso!!!");
-                                vendaRealizada.setStatusVenda("FECHADA");
-                                btnFecharVenda.setEnabled(false);
-                                txtIdProduto.setEnabled(false);
-                                txtNomeProduto.setEnabled(false);
-                                txtValorUnitario.setEnabled(false);
-                                txtQuantidade.setEnabled(false);
-                                txtValorTotal.setEnabled(false);
-                                txtValorTotal.setEnabled(false);
-                                btnAdicionar.setEnabled(false);
-                                btnRemover.setEnabled(false);
-                                txtValorTotalFinal.setEnabled(false);
-
-                            }
-                        }
-                    }
-                }
-            }
         }
     }//GEN-LAST:event_btnFecharVendaActionPerformed
 
     private void txtIdClienteFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtIdClienteFocusLost
         int id = 0;
+        boolean status = clienteDao.conectar();
         try {
             id = Integer.parseInt(txtIdCliente.getText());
         } catch (NumberFormatException e) {
 
         }
 
-        for (Cliente cliente : cliente.getClienteList()) {
-            if (id == cliente.getId()) {
-                txtNomeCliente.setText(cliente.getNomeCliente());
-                jbSalvar.setEnabled(true);
-                return;
-            }
+        if (status == true) {
+            Cliente cliente = new Cliente();
+            cliente = clienteDao.consultar(id);
+
+            txtNomeCliente.setText(cliente.getNomeCliente());
+            clienteDao.desconectar();
+            return;
         }
         JOptionPane.showMessageDialog(rootPane, "Cliente não encontrado");
     }//GEN-LAST:event_txtIdClienteFocusLost
 
     private void txtIdProdutoFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtIdProdutoFocusLost
         int id = 0;
+        boolean status = acabadoDao.conectar();
         try {
             id = Integer.parseInt(txtIdProduto.getText());
         } catch (NumberFormatException e) {
 
         }
 
-        for (ProdutoAcabado produtoAcabado : produtoAcabado.getProdutoAcabadoList()) {
-            if (id == produtoAcabado.getId()) {
-                txtNomeProduto.setText(produtoAcabado.getNome());
-                txtValorUnitario.setText(Double.toString(produtoAcabado.getPreco()));
-                return;
-            }
+        if (status == true) {
+            ProdutoAcabado acabado = new ProdutoAcabado();
+            acabado = acabadoDao.consultar(id);
+            txtNomeProduto.setText(acabado.getNome());
+            txtValorUnitario.setText(Double.toString(acabado.getPreco()));
+            acabadoDao.desconectar();
+            return;
         }
+
         JOptionPane.showMessageDialog(rootPane, "Produto não encontrado");
         txtIdProduto.setText("");
         txtNomeProduto.setText("");
@@ -816,16 +970,24 @@ public class telaVenda extends javax.swing.JFrame {
                 if ("Nimbus".equals(info.getName())) {
                     javax.swing.UIManager.setLookAndFeel(info.getClassName());
                     break;
+
                 }
             }
         } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(telaVenda.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(telaVenda.class
+                    .getName()).log(java.util.logging.Level.SEVERE, null, ex);
+
         } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(telaVenda.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(telaVenda.class
+                    .getName()).log(java.util.logging.Level.SEVERE, null, ex);
+
         } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(telaVenda.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(telaVenda.class
+                    .getName()).log(java.util.logging.Level.SEVERE, null, ex);
+
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(telaVenda.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(telaVenda.class
+                    .getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
         //</editor-fold>
         //</editor-fold>
@@ -879,88 +1041,35 @@ public class telaVenda extends javax.swing.JFrame {
     private javax.swing.JTextField txtValorUnitario;
     // End of variables declaration//GEN-END:variables
 
-    private void atualizarTabela() {
-        if (!Venda.getItemVenda().isEmpty()) {
-
-            ItemVenda itemVenda;
-
-            tableModel = new DefaultTableModel(tableColumns, 0);
-
-            for (int i = 0; i < Venda.getItemVenda().size(); i++) {
-
-                itemVenda = Venda.getItemVenda().get(i);
-
-                Object[] rowData = {String.valueOf(itemVenda.getId()), itemVenda.getNomeProduto(),
-                    String.valueOf(itemVenda.getQuantidade()), String.valueOf(itemVenda.getValorUnitario()), String.valueOf(itemVenda.getValorTotal())};
-
-                tableModel.addRow(rowData);
-            }
-
-            tblItemVenda.setModel(tableModel);
-        } else {
-
-            tableModel = new DefaultTableModel(tableColumns, 0);
-
-            tblItemVenda.setModel(tableModel);
-        }
+    public String reverterData(String data) {
+        String dia = data.substring(8);
+        String mes = data.substring(5, 7);
+        String ano = data.substring(0, 4);
+        String sqlDate = dia + "/" + mes + "/" + ano;
+        return sqlDate;
     }
 
-    private int getPosicaoItem() {
-        int posItemVenda = tblItemVenda.getSelectedRow();
+    public void limparTela() {
+        DefaultTableModel tabelaItemVenda = (DefaultTableModel) tblItemVenda.getModel();
+        txtData.setText("");
+        txtId.setText("");
+        txtIdCliente.setText("");
+        txtIdProduto.setText("");
+        txtNomeCliente.setText("");
+        txtNomeProduto.setText("");
+        txtQuantidade.setText("");
+        txtValorTotal.setText("");
+        txtValorTotalFinal.setText("");
+        txtValorUnitario.setText("");
+        txtId.requestFocus();
+        btnAdicionar.setEnabled(false);
+        btnFecharVenda.setEnabled(false);
+        btnRemover.setEnabled(false);
+        jbExcluir.setEnabled(false);
+        jbSalvar.setEnabled(false);
 
-        if (posItemVenda == -1) {
-            JOptionPane.showMessageDialog(rootPane, "Selecione um item");
-        }
-
-        return posItemVenda;
-    }
-
-    private void excluirItem(int posItem) {
-        double soma = 0.0;
-        int id = 0;
-
-        try {
-            soma = Double.parseDouble(txtValorTotalFinal.getText());
-            id = Integer.parseInt(txtId.getText());
-        } catch (NumberFormatException e) {
-            return;
-        }
-        if (posItem >= 0) {
-            String[] options = {"SIM", "NÃO"};
-            int deletar = JOptionPane.showOptionDialog(rootPane,
-                    "Tem certeza que deseja excluir?",
-                    "Exclusão do Item",
-                    JOptionPane.DEFAULT_OPTION,
-                    JOptionPane.QUESTION_MESSAGE,
-                    null,
-                    options,
-                    options[0]);
-
-            if (deletar == 0) {
-
-                ItemVenda venda1;
-
-                for (Venda vendaRealiada : venda.getVendaList()) {
-                    if (id == vendaRealiada.getId()) {
-                        for (int i = 0; i < venda.getItemVenda().size(); i++) {
-
-                            venda1 = venda.getItemVenda().get(i);
-
-                            soma -= venda1.getValorTotal();
-
-                            vendaRealiada.setValorTotalFinal(soma);
-
-                            txtValorTotalFinal.setText(Double.toString(vendaRealiada.getValorTotalFinal()));
-                        }
-                    }
-                }
-
-                venda.getItemVenda().remove(posItem);
-                atualizarTabela();
-
-            } else {
-                tblItemVenda.clearSelection();
-            }
+        for (int i = 0; i < tabelaItemVenda.getRowCount(); i++) {
+            tabelaItemVenda.removeRow(i);
         }
     }
 }
