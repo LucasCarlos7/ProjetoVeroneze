@@ -172,7 +172,7 @@ public class RelatorioProdutoAcabado extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jbVoltarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbVoltarActionPerformed
-        Produto produto = new Produto();
+        TelaProduto produto = new TelaProduto();
         produto.setVisible(true);
         dispose();
     }//GEN-LAST:event_jbVoltarActionPerformed

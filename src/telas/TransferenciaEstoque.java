@@ -580,7 +580,7 @@ public class TransferenciaEstoque extends javax.swing.JFrame {
     private void txtQuantidadeAcabadoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtQuantidadeAcabadoActionPerformed
         double quantidade = 0.0;
         int idProdutoAcabado = 0;
-        boolean status = Produto.acabadoDao.conectar();
+        boolean status = TelaProduto.acabadoDao.conectar();
         try {
             idProdutoAcabado = Integer.parseInt(txtIdProdutoAcabado.getText());
             quantidade = Double.parseDouble(txtQuantidadeAcabado.getText());
@@ -591,7 +591,7 @@ public class TransferenciaEstoque extends javax.swing.JFrame {
         if (quantidade > 0.0) {
             if (status == true) {
                 ProdutoAcabado acabado = new ProdutoAcabado();
-                acabado = Produto.acabadoDao.consultar(idProdutoAcabado);
+                acabado = TelaProduto.acabadoDao.consultar(idProdutoAcabado);
 
                 double proporcao = acabado.getProdutoCongelado().getProporcao() * quantidade;
                 String strProporcao = Double.toString(proporcao);
@@ -686,7 +686,7 @@ public class TransferenciaEstoque extends javax.swing.JFrame {
     private void txtQuantidadeAcabadoFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtQuantidadeAcabadoFocusLost
         double quantidade = 0.0;
         int idProdutoAcabado = 0;
-        boolean status = Produto.acabadoDao.conectar();
+        boolean status = TelaProduto.acabadoDao.conectar();
         try {
             idProdutoAcabado = Integer.parseInt(txtIdProdutoAcabado.getText());
             quantidade = Double.parseDouble(txtQuantidadeAcabado.getText());
@@ -697,7 +697,7 @@ public class TransferenciaEstoque extends javax.swing.JFrame {
         if (quantidade > 0.0) {
             if (status == true) {
                 ProdutoAcabado acabado = new ProdutoAcabado();
-                acabado = Produto.acabadoDao.consultar(idProdutoAcabado);
+                acabado = TelaProduto.acabadoDao.consultar(idProdutoAcabado);
 
                 double proporcao = acabado.getProdutoCongelado().getProporcao() * quantidade;
                 String strProporcao = Double.toString(proporcao);
@@ -714,7 +714,7 @@ public class TransferenciaEstoque extends javax.swing.JFrame {
 
     private void txtIdProdutoAcabadoFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtIdProdutoAcabadoFocusLost
         int idProdutoAcabado = 0;
-        boolean status = Produto.acabadoDao.conectar();
+        boolean status = TelaProduto.acabadoDao.conectar();
         try {
             idProdutoAcabado = Integer.parseInt(txtIdProdutoAcabado.getText());
         } catch (NumberFormatException e) {
@@ -722,7 +722,7 @@ public class TransferenciaEstoque extends javax.swing.JFrame {
         }
         if (status == true) {
             ProdutoAcabado acabado = new ProdutoAcabado();
-            acabado = Produto.acabadoDao.consultar(idProdutoAcabado);
+            acabado = TelaProduto.acabadoDao.consultar(idProdutoAcabado);
 
             txtNomeProdutoAcabado.setText(acabado.getNome());
             txtIdProdutoCongelado.setText(Integer.toString(acabado.getId()));

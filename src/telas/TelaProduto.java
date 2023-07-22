@@ -16,9 +16,9 @@ import produto.ProdutoAcabadoDao;
  *
  * @author LUKAS
  */
-public class Produto extends javax.swing.JFrame {
+public class TelaProduto extends javax.swing.JFrame {
 
-    public static Produto produto = new Produto();
+    public static TelaProduto telaProduto = new TelaProduto();
 
     public static ProdutoCongelado produtoCongelado = new ProdutoCongelado();
     public static ProdutoAcabado produtoAcabado = new ProdutoAcabado();
@@ -32,7 +32,7 @@ public class Produto extends javax.swing.JFrame {
     /**
      * Creates new form Produto
      */
-    public Produto() {
+    public TelaProduto() {
         initComponents();
         jPanelItem.setVisible(false);
         jbExcluir.setEnabled(false);
@@ -654,7 +654,7 @@ public class Produto extends javax.swing.JFrame {
                             System.out.println("Erro na conversão da data");
                         }
 
-                        ProdutoCongelado congelado = new ProdutoCongelado(id, nome, descricao, preco, proporcao, sqlDate);
+                        ProdutoCongelado congelado = new ProdutoCongelado(id, nome, descricao, preco, sqlDate, proporcao);
                         if (congeladoDao.consultarNome(nome).getNome().equals(nome)) {
                             JOptionPane.showMessageDialog(rootPane, "Produto já cadastrado com esse nome");
                             return;
@@ -710,7 +710,7 @@ public class Produto extends javax.swing.JFrame {
                         }
                         ProdutoCongelado congelado = new ProdutoCongelado();
                         congelado.setId(IdCongelado);
-                        ProdutoAcabado acabado = new ProdutoAcabado(id, nome, descricao, preco, congelado, sqlDate);
+                        ProdutoAcabado acabado = new ProdutoAcabado(id, nome, descricao, preco, sqlDate, produtoCongelado);
 
                         if (acabadoDao.consultarNome(nome).getNome().equals(nome)) {
                             JOptionPane.showMessageDialog(rootPane, "Produto já cadastrado com esse nome");
@@ -940,27 +940,28 @@ public class Produto extends javax.swing.JFrame {
                 }
             }
         } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(Produto.class
+            java.util.logging.Logger.getLogger(TelaProduto.class
                     .getName()).log(java.util.logging.Level.SEVERE, null, ex);
 
         } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(Produto.class
+            java.util.logging.Logger.getLogger(TelaProduto.class
                     .getName()).log(java.util.logging.Level.SEVERE, null, ex);
 
         } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(Produto.class
+            java.util.logging.Logger.getLogger(TelaProduto.class
                     .getName()).log(java.util.logging.Level.SEVERE, null, ex);
 
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(Produto.class
+            java.util.logging.Logger.getLogger(TelaProduto.class
                     .getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
+        //</editor-fold>
         //</editor-fold>
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new Produto().setVisible(true);
+                new TelaProduto().setVisible(true);
             }
         });
     }
